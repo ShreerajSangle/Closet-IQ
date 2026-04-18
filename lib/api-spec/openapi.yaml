@@ -3,20 +3,26 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: ClosetIQ API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: wardrobe
+    description: Wardrobe item operations
+  - name: outfits
+    description: Outfit operations
+  - name: profile
+    description: User profile operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +30,312 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    put:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileBody"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /wardrobe:
+    get:
+      operationId: listWardrobeItems
+      tags: [wardrobe]
+      summary: List all wardrobe items
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: style
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of wardrobe items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WardrobeItem"
+    post:
+      operationId: createWardrobeItem
+      tags: [wardrobe]
+      summary: Add a new wardrobe item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWardrobeItemBody"
+      responses:
+        "201":
+          description: Created item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardrobeItem"
+
+  /wardrobe/{id}:
+    get:
+      operationId: getWardrobeItem
+      tags: [wardrobe]
+      summary: Get a wardrobe item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Wardrobe item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardrobeItem"
+    put:
+      operationId: updateWardrobeItem
+      tags: [wardrobe]
+      summary: Update a wardrobe item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWardrobeItemBody"
+      responses:
+        "200":
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardrobeItem"
+    delete:
+      operationId: deleteWardrobeItem
+      tags: [wardrobe]
+      summary: Delete a wardrobe item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /wardrobe/{id}/last-worn:
+    post:
+      operationId: markItemLastWorn
+      tags: [wardrobe]
+      summary: Mark item as worn today
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardrobeItem"
+
+  /outfits/generate:
+    post:
+      operationId: generateOutfits
+      tags: [outfits]
+      summary: Generate outfit combinations from wardrobe
+      responses:
+        "200":
+          description: Generated outfits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Outfit"
+
+  /outfits:
+    get:
+      operationId: listOutfits
+      tags: [outfits]
+      summary: List saved outfits
+      parameters:
+        - name: saved_only
+          in: query
+          schema:
+            type: boolean
+        - name: min_score
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of outfits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Outfit"
+
+  /outfits/{id}/save:
+    post:
+      operationId: saveOutfit
+      tags: [outfits]
+      summary: Save an outfit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Saved outfit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Outfit"
+
+  /outfits/{id}/unsave:
+    post:
+      operationId: unsaveOutfit
+      tags: [outfits]
+      summary: Unsave/remove a saved outfit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Unsaved outfit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Outfit"
+
+  /outfits/{id}/worn:
+    post:
+      operationId: markOutfitWorn
+      tags: [outfits]
+      summary: Mark outfit as worn today
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated outfit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Outfit"
+
+  /outfits/{id}/explain:
+    post:
+      operationId: explainOutfit
+      tags: [outfits]
+      summary: Get AI explanation for why outfit works (Groq)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: AI explanation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutfitExplanation"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [wardrobe]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /outfits/history:
+    get:
+      operationId: getWornHistory
+      tags: [outfits]
+      summary: Get outfit wearing history
+      responses:
+        "200":
+          description: Worn outfit history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WornHistoryEntry"
+
+  /gap-advisor:
+    get:
+      operationId: getGapAdvisor
+      tags: [wardrobe]
+      summary: Get wardrobe gap analysis and buying recommendations
+      responses:
+        "200":
+          description: Gap advisor recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GapAdvisorResult"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +343,284 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        skin_tone_hex:
+          type: string
+        eye_color_hex:
+          type: string
+        hair_color_hex:
+          type: string
+        skin_tone_type:
+          type: string
+        style_preferences:
+          type: array
+          items:
+            type: string
+      required: [id, display_name, skin_tone_hex, eye_color_hex, hair_color_hex, skin_tone_type, style_preferences]
+
+    UpdateProfileBody:
+      type: object
+      properties:
+        display_name:
+          type: string
+        style_preferences:
+          type: array
+          items:
+            type: string
+
+    WardrobeItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        primary_color_hex:
+          type: string
+        color_name:
+          type: string
+        style_tags:
+          type: array
+          items:
+            type: string
+        pattern:
+          type: string
+        image_url:
+          type: string
+          nullable: true
+        last_worn:
+          type: string
+          nullable: true
+        times_worn:
+          type: integer
+        created_at:
+          type: string
+      required: [id, name, brand, category, primary_color_hex, color_name, style_tags, pattern, times_worn, created_at]
+
+    CreateWardrobeItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        primary_color_hex:
+          type: string
+        color_name:
+          type: string
+        style_tags:
+          type: array
+          items:
+            type: string
+        pattern:
+          type: string
+        image_url:
+          type: string
+          nullable: true
+      required: [name, brand, category, primary_color_hex, color_name, style_tags, pattern]
+
+    UpdateWardrobeItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        primary_color_hex:
+          type: string
+        color_name:
+          type: string
+        style_tags:
+          type: array
+          items:
+            type: string
+        pattern:
+          type: string
+        image_url:
+          type: string
+          nullable: true
+
+    DeleteResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        id:
+          type: string
+      required: [success, id]
+
+    OutfitItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        primary_color_hex:
+          type: string
+        color_name:
+          type: string
+        image_url:
+          type: string
+          nullable: true
+        pattern:
+          type: string
+      required: [id, name, brand, category, primary_color_hex, color_name, pattern]
+
+    Outfit:
+      type: object
+      properties:
+        id:
+          type: string
+        top:
+          $ref: "#/components/schemas/OutfitItem"
+        bottom:
+          $ref: "#/components/schemas/OutfitItem"
+        shoes:
+          $ref: "#/components/schemas/OutfitItem"
+        jacket:
+          nullable: true
+          $ref: "#/components/schemas/OutfitItem"
+        score:
+          type: integer
+        score_breakdown:
+          $ref: "#/components/schemas/ScoreBreakdown"
+        is_saved:
+          type: boolean
+        last_worn:
+          type: string
+          nullable: true
+        times_worn:
+          type: integer
+        ai_explanation:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+      required: [id, top, bottom, shoes, score, score_breakdown, is_saved, times_worn, created_at]
+
+    ScoreBreakdown:
+      type: object
+      properties:
+        color_harmony:
+          type: integer
+        skin_tone_affinity:
+          type: integer
+        style_coherence:
+          type: integer
+        occasion_match:
+          type: integer
+        layering_bonus:
+          type: integer
+        total:
+          type: integer
+      required: [color_harmony, skin_tone_affinity, style_coherence, occasion_match, layering_bonus, total]
+
+    OutfitExplanation:
+      type: object
+      properties:
+        explanation:
+          type: string
+        cached:
+          type: boolean
+      required: [explanation, cached]
+
+    DashboardStats:
+      type: object
+      properties:
+        total_items:
+          type: integer
+        total_outfits:
+          type: integer
+        saved_outfits:
+          type: integer
+        last_worn_date:
+          type: string
+          nullable: true
+        top_score:
+          type: integer
+        items_by_category:
+          type: object
+          additionalProperties:
+            type: integer
+      required: [total_items, total_outfits, saved_outfits, top_score, items_by_category]
+
+    WornHistoryEntry:
+      type: object
+      properties:
+        outfit_id:
+          type: string
+        worn_date:
+          type: string
+        outfit:
+          $ref: "#/components/schemas/Outfit"
+      required: [outfit_id, worn_date, outfit]
+
+    GapAdvisorResult:
+      type: object
+      properties:
+        missing_categories:
+          type: array
+          items:
+            type: string
+        color_gaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColorGap"
+        recommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/GapRecommendation"
+        coverage_score:
+          type: integer
+      required: [missing_categories, color_gaps, recommendations, coverage_score]
+
+    ColorGap:
+      type: object
+      properties:
+        color_name:
+          type: string
+        hex:
+          type: string
+        reason:
+          type: string
+        priority:
+          type: string
+      required: [color_name, hex, reason, priority]
+
+    GapRecommendation:
+      type: object
+      properties:
+        category:
+          type: string
+        color_name:
+          type: string
+        color_hex:
+          type: string
+        reason:
+          type: string
+        estimated_outfits_unlocked:
+          type: integer
+        priority:
+          type: string
+      required: [category, color_name, color_hex, reason, estimated_outfits_unlocked, priority]
